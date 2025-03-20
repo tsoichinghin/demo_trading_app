@@ -1,0 +1,8 @@
+ccxt
+pandas
+flask
+flask-socketio
+beautifulsoup4
+selenium
+scipy
+pytz
