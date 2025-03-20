@@ -45,7 +45,7 @@ logger.info(f"線程{thread_id}: {symbol} 報酬風險比少於 1.5，終止交�
 raise NextSymbolCheck//
 如不需請刪去，或修改為想要之比率
 
-關於monitor_position()與close_position()：
+- 關於monitor_position()與close_position()：
 如有別的關單邏輯，請修改以下行代碼。
 代碼於56行至61行
 
