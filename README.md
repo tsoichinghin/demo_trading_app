@@ -18,7 +18,7 @@
 
 4. /app/trading_logic.py
 - 關於trade_searcher()：
-i. 當中有如於指定時間內，該交易對曾開單，將skip過該交易對。預設為30分鐘時圖，所以為30分鐘內開單，則skip過交易對。
+# 當中有如於指定時間內，該交易對曾開單，將skip過該交易對。預設為30分鐘時圖，所以為30分鐘內開單，則skip過交易對。
 代碼於166行至175行
 // current_time = datetime.now()
 thirty_minutes_ago = current_time - timedelta(minutes=30)
@@ -32,13 +32,13 @@ if has_recent_trade:
     continue //
 * 如不需請刪去，或修改為想要之時間間隔。
 
-ii. 計算指標，修改獲取幣安交易所K線周期資料之變量。請修改至你需要的周期數，預設為340周期。（不建議過高，或許會觸及幣安Rest API Limit）
+# 計算指標，修改獲取幣安交易所K線周期資料之變量。請修改至你需要的周期數，預設為340周期。（不建議過高，或許會觸及幣安Rest API Limit）
 代碼於177行至178行
 //df = get_historical_data(symbol, 340)
 if len(df) < 340://
 * 340行為計算ema100的最好周期數
 
-iii. 報酬風險比 - 有預設報酬風險比不高於1.5則取消開單的功能。
+# 報酬風險比 - 有預設報酬風險比不高於1.5則取消開單的功能。
 代碼為201行至203行
 //if profit_loss_ratio < Decimal("1.5"):
 logger.info(f"線程{thread_id}: {symbol} 報酬風險比少於 1.5，終止交易")
