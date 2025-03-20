@@ -1,5 +1,7 @@
 # Demo Trading App
-這是一個幣安現貨模擬交易程式。
+- 這是一個幣安現貨模擬交易程式。
+
+# 以下為修改指南：
 
 1. /app/config.py
 修改TIMEFRAME變量為想要的K線時間圖
