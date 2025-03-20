@@ -74,8 +74,7 @@ def toggle_search():
 def handle_connect(auth=None):
     total_positions = len(positions)
     positions_copy = deep_copy_positions(positions)
-    capital_copy = capital
-    capital_copy = decimal_to_str(capital_copy)
+    capital_copy = f"{capital:.2f}"
     total_value_copy = f"{calculate_total_value():.2f}"
     status = 'enabled' if allow_new_threads else 'disabled'
     total_trades = len(trade_history)
