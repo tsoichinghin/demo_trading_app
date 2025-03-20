@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>日誌記錄</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #00cc00;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            text-shadow: 0 0 5px rgba(0, 204, 0, 0.5);
+        }
+        #log-container {
+            width: 90%;
+            max-height: 70vh;
+            margin: 0 auto;
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+        button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 12px;
+            background: #00cc00;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background: #009900;
+            transform: scale(1.05);
+        }
+    </style>
+    <script>
+        var socket = io('http://localhost:8888');
+        socket.on('connect', function() {
+            console.log('Connected to SocketIO server');
+            document.getElementById('log-container').innerHTML = '';
+        });
+        socket.on('update_logs', function(data) {
+            console.log('Received log:', data.log);
+            var logContainer = document.getElementById('log-container');
+            logContainer.innerHTML += data.log + '\n';
+            logContainer.scrollTop = logContainer.scrollHeight;
+        });
+        socket.on('error', function(error) {
+            console.log('SocketIO error:', error);
+        });
+    </script>
+</head>
+<body>
+    <h1>日誌記錄</h1>
+    <button onclick="window.location.href='/'">返回持倉情況</button>
+    <div id="log-container"></div>
+</body>
+</html>

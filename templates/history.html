@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>歷史數據</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 90%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #3498db;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        tr:hover {
+            background: #ecf0f1;
+            transition: background 0.3s ease;
+        }
+        .pagination {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .pagination button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        .pagination button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 25px;
+            margin: 0 10px 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            position: relative;
+            top: -5px;
+        }
+        .button:hover {
+            background: #c0392b;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <h1>歷史數據</h1>
+    <button class="button" onclick="goToPositions()">返回持倉情況</button>
+    <table id="history_table">
+        <tr>
+            <th>交易編號</th><th>方向</th><th>平倉原因</th><th>交易對</th><th>開倉時間</th><th>平倉時間</th>
+            <th>開倉價</th><th>平倉價</th><th>投資金額</th><th>損益</th><th>損益百分比</th><th>預先報酬風險比</th><th>本金</th><th>盈虧</th>
+        </tr>
+        {% for trade in trade_history %}
+        <tr>
+            <td>{{ trade.trade_number }}</td>
+            <td>{{ trade.direction }}</td>
+            <td>{{ trade.close_reason }}</td>
+            <td>{{ trade.symbol }}</td>
+            <td>{{ trade.open_time }}</td>
+            <td>{{ trade.close_time }}</td>
+            <td>{{ trade.open_price }}</td>
+            <td>{{ trade.close_price }}</td>
+            <td>{{ trade.investing_amount }}</td>
+            <td>{{ trade.gain }}</td>
+            <td>{{ trade.change_percentage }}</td>
+            <td>{{ trade.profit_loss_ratio }}</td>
+            <td>{{ trade.capital }}</td>
+            <td>{{ trade.profit_or_loss }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <div class="pagination" 
+         data-current-page="{{ current_page }}" 
+         data-total-pages="{{ total_pages }}" 
+         data-total-trades="{{ total_trades }}">
+    </div>
+    <script>
+        var socket = io();
+    </script>
+</body>
+</html>
