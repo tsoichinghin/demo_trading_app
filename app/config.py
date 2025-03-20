@@ -7,7 +7,6 @@ import threading
 import csv
 import os
 
-# 獲取 binance/ 目錄的絕對路徑
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 初始化設定
