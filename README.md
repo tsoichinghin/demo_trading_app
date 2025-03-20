@@ -3,7 +3,7 @@
 
 # 以下為運行與修改指南：
 
-1. /app/config.py - 修改TIMEFRAME變量為想要的K線時間圖，修改INITIAL_CAPITAL為想要的起始本金，修改MIN_TRADE_AMOUNT為想要的最低每單投資金額。
+1. /app/config.py - 修改TIMEFRAME變量為想要的K線時間圖；修改INITIAL_CAPITAL為想要的起始本金；修改MIN_TRADE_AMOUNT為想要的最低每單投資金額。
 
 2. /app/exchange_utils.py - 在calculate_indicators()中加入想要使用的指標，計算方法自備。但已附送上四個指標；在check_conditions()利用已計算指標設定開單條件；在tp_and_sl()設定自己想要的止盈價和止損價，已有預設邏輯，可自行修改；get_trade_amount()和classify_liquidity()不建議修改，兩個function用於計算每單的投資金額，該投資金額建基於該交易對的每秒成交額與訂單簿權重，原旨為避免關單時市場需求不高，而引致無法即時成交的情況。
 
@@ -76,7 +76,7 @@ change_percentage = abs(pnl) / position['amount'] * 100//
 
 5. /app/web_interface.py - 請不要修改。
 
-6. /templates/logs.html - 如果想以VPS 24/7運行程式，請把第55行的：「var socket = io('http://localhost:8888');」中的localhost改為VPS的外部IP。
+6. /templates/logs.html - 如果想以VPS 24/7運行程式，請把第55行的：var socket = io('http://localhost:8888'); 中的localhost改為VPS的外部IP。
 
 7. requirement.txt - 運行前安裝所需依賴項，運行以下命令：「pip install -r requirement.txt」
 
