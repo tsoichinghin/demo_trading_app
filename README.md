@@ -47,20 +47,20 @@ raise NextSymbolCheck//
 
 - 關於monitor_position()與close_position()：
 如有別的關單邏輯，請修改以下行代碼。
-代碼於56行至61行
+代碼於56行至61行:
 
-//if current_price >= position['take_profit']:
+- //if current_price >= position['take_profit']:
 close_position(position, '止盈', position['take_profit'], position['thread_id'])
 break
 elif current_price <= position['stop_loss']:
 close_position(position, '止損', current_price, position['thread_id'])
 break//
 
-預設關單邏輯為止盈與止損，如有別的關單邏輯，請自行修改。
+- 預設關單邏輯為止盈與止損，如有別的關單邏輯，請自行修改。
 close_position的接入變量為(position, 關單原因, 關單價格, position['thread_id'])
 如有別的關單原因，請一同修改close_position()的69行至86行代碼
 
-//if reason == '止損':
+- //if reason == '止損':
 crypto_amount = position['amount'] / position['entry_price']
 crypto_amount_after_fee = crypto_amount * Decimal("0.999")
 after_exit_usdt_amount = crypto_amount_after_fee * excute_price
@@ -79,7 +79,7 @@ pnl = after_exit_usdt_amount_after_fee - position['amount']
 capital = capital + position['amount'] + pnl
 change_percentage = abs(pnl) / position['amount'] * 100//
 
-建議只修改reason，其餘為已正確計算幣安手續費之步驟。
+- 建議只修改reason，其餘為已正確計算幣安手續費之步驟。
 
 5. /app/web_interface.py
 請不要修改。
