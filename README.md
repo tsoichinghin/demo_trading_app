@@ -1,4 +1,4 @@
-# demo_trading_app
+# Demo Trading App
 這是一個幣安現貨模擬交易程式。
 
 1. /app/config.py
