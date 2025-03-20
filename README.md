@@ -82,4 +82,5 @@ change_percentage = abs(pnl) / position['amount'] * 100//
 
 8. 運行程式 - python3 main.py
 
-9. 實時監控 - 請於瀏覽器連結：('http://localhost:8888')，使用此程式；程式的logs會一併於查看日誌位置出現，最多為100行，新的蓋過舊的log；已關單交易則於查看歷史中出現；已關單交易也會一併儲存於results/results.csv，但請注意每開啟一次程式，results.csv將會清空，請自行備份；切換尋找新交易對按鍵，為控制trading_logic.py中的trade_searcher()。如狀態為disabled，將不開啟新的trade_searcher()之線程。舊的已開單線程仍然運作，直至關單為至。如trade_searcher()的線程為零，將會開啟新線程。
+9. 實時監控 - hosting url：('http://localhost:8888')
+- 請到瀏覽器連結以上地址使用此程式；程式的logs會一併於查看日誌位置出現，最多為100行，新的蓋過舊的log；已關單交易則於查看歷史中出現；已關單交易也會一併儲存於results/results.csv，但請注意每開啟一次程式，results.csv將會清空，請自行備份；切換尋找新交易對按鍵，為控制trading_logic.py中的trade_searcher()。如狀態為disabled，將不開啟新的trade_searcher()之線程。舊的已開單線程仍然運作，直至關單為至。如trade_searcher()的線程為零，將會開啟新線程。
