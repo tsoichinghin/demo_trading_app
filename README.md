@@ -30,20 +30,20 @@ has_recent_trade = any(
 if has_recent_trade:
     logger.info(f"線程{thread_id}: {symbol} 在過去 30 分鐘內曾開過單，跳過")
     continue //
-* 如不需請刪去，或修改為想要之時間間隔。
+如不需請刪去，或修改為想要之時間間隔。
 
 2) 計算指標，修改獲取幣安交易所K線周期資料之變量。請修改至你需要的周期數，預設為340周期。（不建議過高，或許會觸及幣安Rest API Limit）
 代碼於177行至178行
 //df = get_historical_data(symbol, 340)
 if len(df) < 340://
-* 340行為計算ema100的最好周期數
+340行為計算ema100的最好周期數
 
 3) 報酬風險比 - 有預設報酬風險比不高於1.5則取消開單的功能。
 代碼為201行至203行
 //if profit_loss_ratio < Decimal("1.5"):
 logger.info(f"線程{thread_id}: {symbol} 報酬風險比少於 1.5，終止交易")
 raise NextSymbolCheck//
-* 如不需請刪去，或修改為想要之比率
+如不需請刪去，或修改為想要之比率
 
 關於monitor_position()與close_position()：
 如有別的關單邏輯，請修改以下行代碼。
@@ -54,9 +54,9 @@ break
 elif current_price <= position['stop_loss']:
 close_position(position, '止損', current_price, position['thread_id'])
 break//
-* 預設關單邏輯為止盈與止損，如有別的關單邏輯，請自行修改。
-* close_position的接入變量為(position, 關單原因, 關單價格, position['thread_id'])
-* 如有別的關單原因，請一同修改close_position()的69行至86行代碼
+預設關單邏輯為止盈與止損，如有別的關單邏輯，請自行修改。
+close_position的接入變量為(position, 關單原因, 關單價格, position['thread_id'])
+如有別的關單原因，請一同修改close_position()的69行至86行代碼
 //if reason == '止損':
 crypto_amount = position['amount'] / position['entry_price']
 crypto_amount_after_fee = crypto_amount * Decimal("0.999")
@@ -75,7 +75,7 @@ after_exit_usdt_amount_after_fee = after_exit_usdt_amount * Decimal("0.999")
 pnl = after_exit_usdt_amount_after_fee - position['amount']
 capital = capital + position['amount'] + pnl
 change_percentage = abs(pnl) / position['amount'] * 100//
-* 建議只修改reason，其餘為已正確計算幣安手續費之步驟。
+建議只修改reason，其餘為已正確計算幣安手續費之步驟。
 
 5. /app/web_interface.py
 請不要修改。
