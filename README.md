@@ -1,5 +1,5 @@
-# Demo Trading App
-- 這是一個幣安現貨模擬交易程式。
+# Demo Program Trading App
+- 這是一個幣安現貨模擬交易程式，旨在用於測試交易策略。
 
 # 以下為運行與修改指南：
 
