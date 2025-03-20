@@ -37,7 +37,7 @@ def monitor_position(position):
             position['current_price'] = current_price
             total_positions = len(positions)
             positions_copy = deep_copy_positions(positions)
-            capital_copy = decimal_to_str(capital)
+            capital_copy = f"{capital:.2f}"
             total_value_copy = f"{calculate_total_value():.2f}"
             status = 'enabled' if allow_new_threads else 'disabled'
             total_trades = len(trade_history)
@@ -116,7 +116,7 @@ def close_position(position, reason, excute_price, thread_id):
     win_rate = "{:.2f}".format((win_trades / total_trades * 100) if total_trades > 0 else 0)
     total_positions = len(positions)
     positions_copy = deep_copy_positions(positions)
-    capital_copy = decimal_to_str(capital)
+    capital_copy = f"{capital:.2f}"
     total_value_copy = f"{calculate_total_value():.2f}"
     status = 'enabled' if allow_new_threads else 'disabled'
     socketio.emit('update_positions', {
@@ -222,7 +222,7 @@ def trade_searcher(thread_id):
                                             threading.Thread(target=monitor_position, args=(position,), daemon=True).start()
                                             total_positions = len(positions)
                                             positions_copy = deep_copy_positions(positions)
-                                            capital_copy = decimal_to_str(capital)
+                                            capital_copy = f"{capital:.2f}"
                                             total_value_copy = f"{calculate_total_value():.2f}"
                                             status = 'enabled' if allow_new_threads else 'disabled'
                                             total_trades = len(trade_history)
