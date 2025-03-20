@@ -2,21 +2,25 @@
 這是一個幣安現貨模擬交易程式。
 
 1. /app/config.py
+
 修改TIMEFRAME變量為想要的K線時間圖
 修改INITIAL_CAPITAL為想要的起始本金
 修改MIN_TRADE_AMOUNT為想要的最低每單投資金額
 
 2. /app/exchange_utils.py
+
 在calculate_indicators()中加入想要使用的指標，計算方法自備。但已附送上四個指標。
 在check_conditions()利用已計算指標設定開單條件
 在tp_and_sl()設定自己想要的止盈價和止損價，已有預設邏輯，可自行修改。
 get_trade_amount()和classify_liquidity()不建議修改，兩個function用於計算每單的投資金額，該投資金額建基於該交易對的每秒成交額與訂單簿權重，原旨為避免關單時市場需求不高，而引致無法即時成交的情況。
 
 3. /app/martet_scanner.py
+
 請不要修改，用於檢查幣安即將關閉的交易對市場，如出現即將關閉的交易對，將刪除在尋找交易對機會的列表中。
 此功能為避免出現開單後，因交易對關閉而無法賣出成交。
 
 4. /app/trading_logic.py
+
 關於trade_searcher()：
 - 當中有如於指定時間內，該交易對曾開單，將skip過該交易對。預設為30分鐘時圖，所以為30分鐘內開單，則skip過交易對。
 代碼於166行至175行
@@ -82,18 +86,23 @@ change_percentage = abs(pnl) / position['amount'] * 100//
 - 建議只修改reason，其餘為已正確計算幣安手續費之步驟。
 
 5. /app/web_interface.py
+
 請不要修改。
 
 6. /templates/logs.html
+
 如果想以VPS 24/7運行程式，請把第55行的：「var socket = io('http://localhost:8888');」中的localhost改為VPS的外部IP。
 
 7. requirement.txt
+  
 運行前安裝所需依賴項，運行以下命令：「pip install -r requirement.txt」
 
 8. 運行程式
+
 python3 main.py
 
 9. 實時監控
+
 請於瀏覽器連結：「http://localhost:8888」，使用此程式。
 程式的logs會一併於查看日誌位置出現，最多為100行，新的蓋過舊的log。
 已關單交易則於查看歷史中出現。
