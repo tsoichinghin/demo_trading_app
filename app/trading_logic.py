@@ -37,7 +37,7 @@ def monitor_position(position):
             position['current_price'] = current_price
             total_positions = len(positions)
             positions_copy = deep_copy_positions(positions)
-            capital_copy = capital
+            capital_copy = capital[0]
             capital_copy = Decimal(str(capital_copy))
             capital_copy = f"{capital_copy:.2f}"
             total_value_copy = f"{calculate_total_value():.2f}"
@@ -74,7 +74,7 @@ def close_position(position, reason, excute_price, thread_id):
             after_exit_usdt_amount = crypto_amount_after_fee * excute_price
             after_exit_usdt_amount_after_fee = after_exit_usdt_amount * Decimal("0.999")
             pnl = after_exit_usdt_amount_after_fee - position['amount']
-            capital = capital + position['amount'] + pnl
+            capital[0] = capital[0] + position['amount'] + pnl
             change_percentage = abs(pnl) / position['amount'] * 100
             if pnl < 0:
                 change_percentage = -change_percentage
@@ -84,13 +84,13 @@ def close_position(position, reason, excute_price, thread_id):
             after_exit_usdt_amount = crypto_amount_after_fee * excute_price
             after_exit_usdt_amount_after_fee = after_exit_usdt_amount * Decimal("0.999")
             pnl = after_exit_usdt_amount_after_fee - position['amount']
-            capital = capital + position['amount'] + pnl
+            capital[0] = capital[0] + position['amount'] + pnl
             change_percentage = abs(pnl) / position['amount'] * 100
         change_percentage = Decimal("{:.2f}".format(change_percentage))
     with trade_count_lock:
         trade_count += 1
         positions.remove(position)
-        history_capital = history_capital + pnl
+        history_capital[0] = history_capital[0] + pnl
         trade_history.append({
             'trade_number': trade_count,
             'direction': 'LONG',
@@ -104,7 +104,7 @@ def close_position(position, reason, excute_price, thread_id):
             'gain': pnl,
             'change_percentage': f"{change_percentage}%",
             'profit_loss_ratio': position['profit_loss_ratio'],
-            'capital': history_capital,
+            'capital': history_capital[0],
             'profit_or_loss': 'profit' if pnl > 0 else 'loss'
         })
         with open(CSV_FILE, 'a', newline='') as f:
@@ -112,13 +112,13 @@ def close_position(position, reason, excute_price, thread_id):
             writer.writerow([trade_count, 'LONG', position['symbol'], position['entry_time'],
                              datetime.now().strftime('%Y-%m-%d %H:%M:%S'), position['entry_price'], excute_price,
                              position['amount'], pnl, f"{change_percentage}%", position['profit_loss_ratio'],
-                             history_capital, 'profit' if pnl > 0 else 'loss'])
+                             history_capital[0], 'profit' if pnl > 0 else 'loss'])
     total_trades = len(trade_history)
     win_trades = sum(1 for trade in trade_history if trade['profit_or_loss'] == 'profit')
     win_rate = "{:.2f}".format((win_trades / total_trades * 100) if total_trades > 0 else 0)
     total_positions = len(positions)
     positions_copy = deep_copy_positions(positions)
-    capital_copy = capital
+    capital_copy = capital[0]
     capital_copy = Decimal(str(capital_copy))
     capital_copy = f"{capital_copy:.2f}"
     total_value_copy = f"{calculate_total_value():.2f}"
@@ -136,7 +136,7 @@ def close_position(position, reason, excute_price, thread_id):
     logger.info(f"線程{thread_id}: {position['symbol']} 已成功平倉，原因：{reason}")
 
 def calculate_total_value():
-    total = capital
+    total = capital[0]
     for pos in positions:
         total += pos['current_price'] * (pos['amount'] / pos['entry_price'])
     return total
@@ -185,15 +185,15 @@ def trade_searcher(thread_id):
                             if check_conditions(df):
                                 process_trade = False
                                 with capital_lock:
-                                    if capital >= Decimal(str(MIN_TRADE_AMOUNT)):
+                                    if capital[0] >= Decimal(str(MIN_TRADE_AMOUNT)):
                                         logger.info(f"線程{thread_id}: 找到可能交易機會 - {symbol}")
                                         trade_amount = get_trade_amount(symbol, thread_id)
                                         if trade_amount and trade_amount >= Decimal(str(MIN_TRADE_AMOUNT)):
-                                            if trade_amount >= capital:
-                                                if trade_amount >= capital * Decimal("1.1"):
-                                                    trade_amount = capital
+                                            if trade_amount >= capital[0]:
+                                                if trade_amount >= capital[0] * Decimal("1.1"):
+                                                    trade_amount = capital[0]
                                                 else:
-                                                    trade_amount = capital * Decimal("0.9")
+                                                    trade_amount = capital[0] * Decimal("0.9")
                                                 trade_amount = Decimal(str(int(trade_amount)))
                                             process_trade = True
                                         else:
@@ -206,11 +206,11 @@ def trade_searcher(thread_id):
                                         logger.info(f"線程{thread_id}: {symbol} 報酬風險比少於 1.5，終止交易")
                                         raise NextSymbolCheck
                                     with capital_lock:
-                                        if capital >= trade_amount:
+                                        if capital[0] >= trade_amount:
                                             new_thread_id = thread_id + 1
                                             logger.info(f"線程{thread_id}: 準備下一個線程，開啟新線程{new_thread_id}")
                                             threading.Thread(target=trade_searcher, args=(new_thread_id,), daemon=True).start()
-                                            capital -= trade_amount
+                                            capital[0] -= trade_amount
                                             position = {
                                                 'symbol': symbol,
                                                 'amount': trade_amount,
@@ -226,7 +226,7 @@ def trade_searcher(thread_id):
                                             threading.Thread(target=monitor_position, args=(position,), daemon=True).start()
                                             total_positions = len(positions)
                                             positions_copy = deep_copy_positions(positions)
-                                            capital_copy = capital
+                                            capital_copy = capital[0]
                                             capital_copy = Decimal(str(capital_copy))
                                             capital_copy = f"{capital_copy:.2f}"
                                             total_value_copy = f"{calculate_total_value():.2f}"
