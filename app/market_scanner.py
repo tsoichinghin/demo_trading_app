@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 from .config import logger
 import re
+import shutil
 
 def fetch_announcement_urls(CURRENT_DATE):
     """從公告列表頁提取標題和 URL"""
@@ -51,6 +52,7 @@ def fetch_announcement_urls(CURRENT_DATE):
                 logger.warning(f"無法解析日期：{date_str}")
     
     driver.quit()
+    shutil.rmtree(temp_dir, ignore_errors=True)
     return announcements
 
 def fetch_delisting_pairs(announcement_url):
@@ -78,6 +80,7 @@ def fetch_delisting_pairs(announcement_url):
         return set()
     
     driver.quit()
+    shutil.rmtree(temp_dir, ignore_errors=True)
     soup = BeautifulSoup(html, 'html.parser')
     delisting_pairs = set()
     pattern = r"At\s*\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s*\(UTC\)\s*[:\s]*([\w/]+(?:,\s*[\w/]+)*)"
