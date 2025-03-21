@@ -81,9 +81,11 @@ change_percentage = abs(pnl) / position['amount'] * 100//
 
 7. requirement.txt - 運行前安裝所需依賴項，運行以下命令：「pip install -r requirement.txt」
 
-8. 注意：現在程式中的幣安交易所之API只准許未受限之地區，如使用者IP為美國，請在/app/config.py的22行代碼「exchange = ccxt.binance({」修改為「exchange = ccxt.binanceus({」
+8. 請確保電腦已安裝google chrome，market_scanner.py需要使用到google chrome。
 
-9. 運行程式 - python3 main.py
+9. 注意：現在程式中的幣安交易所之API只准許未受限之地區，如使用者IP為美國，請在/app/config.py的22行代碼「exchange = ccxt.binance({」修改為「exchange = ccxt.binanceus({」
 
-10. 實時監控 - hosting url：('http://localhost:8888')
+10. 運行程式 - python3 main.py
+
+11. 實時監控 - hosting url：('http://localhost:8888')
 - 請到瀏覽器連結以上地址使用此程式；程式的logs會一併於查看日誌位置出現，最多為100行，新的蓋過舊的log；已關單交易則於查看歷史中出現；已關單交易也會一併儲存於results/results.csv，但請注意每開啟一次程式，results.csv將會清空，請自行備份；切換尋找新交易對按鍵，為控制trading_logic.py中的trade_searcher()。如狀態為disabled，將不開啟新的trade_searcher()之線程。舊的已開單線程仍然運作，直至關單為至。如trade_searcher()的線程為零，狀態由disabled轉為enabled，則將會開啟新線程。
