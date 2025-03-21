@@ -7,6 +7,7 @@ import threading
 import csv
 import os
 
+# 獲取 binance/ 目錄的絕對路徑
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 初始化設定
@@ -40,8 +41,8 @@ capital_lock = threading.Lock()
 trade_count_lock = threading.Lock()
 positions = []
 trade_history = []
-capital = Decimal(str(INITIAL_CAPITAL))
-history_capital = Decimal(str(INITIAL_CAPITAL))
+capital = [Decimal(str(INITIAL_CAPITAL))]
+history_capital = [Decimal(str(INITIAL_CAPITAL))]
 trade_count = 0
 allow_new_threads = True
 search_threads_active = 0
