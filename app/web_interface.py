@@ -1,5 +1,5 @@
 from flask import render_template
-from .config import app, socketio, positions, capital, trade_history, allow_new_threads, logger, thread_id, search_threads_active, price_drop_active, active_lock, log_history
+from .config import app, socketio, positions, trade_history, logger, config, active_lock, log_history
 from .trading_logic import calculate_total_value, deep_copy_positions, trade_searcher
 from .trading_logic import decimal_to_str
 import threading
@@ -10,7 +10,7 @@ def positions_page():
     total_positions = len(positions)
     return render_template('positions.html', 
                          positions=positions, 
-                         capital=capital[0], 
+                         capital=config['capital'], 
                          total_value=calculate_total_value(),
                          total_positions=total_positions)
 
@@ -58,28 +58,28 @@ def history_page(page=1):
 
 @app.route('/toggle_search', methods=['POST'])
 def toggle_search():
-    global allow_new_threads, search_threads_active, price_drop_active
-    allow_new_threads = not allow_new_threads
-    status = 'enabled' if allow_new_threads else 'disabled'
+    global config
+    config['allow_new_threads'] = not config['allow_new_threads']
+    status = 'enabled' if config['allow_new_threads'] else 'disabled'
     socketio.emit('update_search_status', {'status': status})
     with active_lock:
-        if search_threads_active == 0:
-            new_thread_id = thread_id + 1
-            threading.Thread(target=trade_searcher, args=(new_thread_id,), daemon=True).start()
-        elif search_threads_active == 1 and price_drop_active > 0:
-            new_thread_id = thread_id + 1
-            threading.Thread(target=trade_searcher, args=(new_thread_id,), daemon=True).start()
+        if config['search_threads_active'] == 0:
+            config['thread_id'] += 1
+            threading.Thread(target=trade_searcher, args=(), daemon=True).start()
+        elif config['search_threads_active'] == 1 and config['price_drop_active'] > 0:
+            config['thread_id'] += 1
+            threading.Thread(target=trade_searcher, args=(), daemon=True).start()
     return {'status': status}, 200
 
 @socketio.on('connect')
 def handle_connect(auth=None):
     total_positions = len(positions)
     positions_copy = deep_copy_positions(positions)
-    capital_copy = capital[0]
+    capital_copy = config['capital']
     capital_copy = Decimal(str(capital_copy))
     capital_copy = f"{capital_copy:.2f}"
     total_value_copy = f"{calculate_total_value():.2f}"
-    status = 'enabled' if allow_new_threads else 'disabled'
+    status = 'enabled' if config['allow_new_threads'] else 'disabled'
     total_trades = len(trade_history)
     win_trades = sum(1 for trade in trade_history if trade['profit_or_loss'] == 'profit')
     win_rate = "{:.2f}".format((win_trades / total_trades * 100) if total_trades > 0 else 0)
