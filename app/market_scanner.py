@@ -33,6 +33,7 @@ def fetch_announcement_urls(CURRENT_DATE):
     except Exception as e:
         logger.error(f"列表頁加載失敗：{e}")
         driver.quit()
+        shutil.rmtree(temp_dir, ignore_errors=True)
         return []
     
     soup = BeautifulSoup(html, 'html.parser')
@@ -77,6 +78,7 @@ def fetch_delisting_pairs(announcement_url):
     except Exception as e:
         logger.error(f"頁面加載失敗（{announcement_url}）：{e}")
         driver.quit()
+        shutil.rmtree(temp_dir, ignore_errors=True)
         return set()
     
     driver.quit()
