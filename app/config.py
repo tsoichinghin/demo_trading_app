@@ -36,17 +36,19 @@ app = Flask(__name__,
 socketio = SocketIO(app)
 
 # 全局變量
-thread_id = 0
+config = {
+    'thread_id': 0,
+    'capital': Decimal(str(INITIAL_CAPITAL)),
+    'history_capital': Decimal(str(INITIAL_CAPITAL)),
+    'trade_count': 0,
+    'allow_new_threads': True,
+    'search_threads_active': 0,
+    'price_drop_active': 0
+}
 capital_lock = threading.Lock()
 trade_count_lock = threading.Lock()
 positions = []
 trade_history = []
-capital = [Decimal(str(INITIAL_CAPITAL))]
-history_capital = [Decimal(str(INITIAL_CAPITAL))]
-trade_count = 0
-allow_new_threads = True
-search_threads_active = 0
-price_drop_active = 0
 active_lock = threading.Lock()
 log_history = []
 
