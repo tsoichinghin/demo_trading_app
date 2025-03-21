@@ -7,9 +7,8 @@ from datetime import datetime, timedelta
 import csv
 from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP
 import traceback
-from .config import (positions, capital, trade_history, trade_count, allow_new_threads,
-                   search_threads_active, active_lock, capital_lock, trade_count_lock,
-                   history_capital, MIN_TRADE_AMOUNT, CSV_FILE, socketio, logger, exchange)
+from .config import (positions, trade_history, active_lock, capital_lock, trade_count_lock,
+                   MIN_TRADE_AMOUNT, CSV_FILE, socketio, logger, exchange, config)
 from .exchange_utils import get_historical_data, calculate_indicators, check_conditions, get_trade_amount, tp_and_sl
 from .market_scanner import scan_markets
 
@@ -27,7 +26,7 @@ def deep_copy_positions(positions):
     return [decimal_to_str(pos.copy()) for pos in positions]
 
 def monitor_position(position):
-    global positions, capital
+    global positions, config
     symbol = position['symbol']
     logger.info(f"線程{position['thread_id']}: 成功開啟 {symbol} 交易")
     while True:
@@ -37,11 +36,11 @@ def monitor_position(position):
             position['current_price'] = current_price
             total_positions = len(positions)
             positions_copy = deep_copy_positions(positions)
-            capital_copy = capital[0]
+            capital_copy = config['capital']
             capital_copy = Decimal(str(capital_copy))
             capital_copy = f"{capital_copy:.2f}"
             total_value_copy = f"{calculate_total_value():.2f}"
-            status = 'enabled' if allow_new_threads else 'disabled'
+            status = 'enabled' if config['allow_new_threads'] else 'disabled'
             total_trades = len(trade_history)
             win_trades = sum(1 for trade in trade_history if trade['profit_or_loss'] == 'profit')
             win_rate = "{:.2f}".format((win_trades / total_trades * 100) if total_trades > 0 else 0)
@@ -66,7 +65,7 @@ def monitor_position(position):
             logger.info(f"線程{position['thread_id']}: 維護{symbol}交易時發生錯誤: {e}")
 
 def close_position(position, reason, excute_price, thread_id):
-    global capital, trade_count, history_capital
+    global config
     with capital_lock:
         if reason == '止損':
             crypto_amount = position['amount'] / position['entry_price']
@@ -74,7 +73,7 @@ def close_position(position, reason, excute_price, thread_id):
             after_exit_usdt_amount = crypto_amount_after_fee * excute_price
             after_exit_usdt_amount_after_fee = after_exit_usdt_amount * Decimal("0.999")
             pnl = after_exit_usdt_amount_after_fee - position['amount']
-            capital[0] = capital[0] + position['amount'] + pnl
+            config['capital'] = config['capital'] + position['amount'] + pnl
             change_percentage = abs(pnl) / position['amount'] * 100
             if pnl < 0:
                 change_percentage = -change_percentage
@@ -84,15 +83,15 @@ def close_position(position, reason, excute_price, thread_id):
             after_exit_usdt_amount = crypto_amount_after_fee * excute_price
             after_exit_usdt_amount_after_fee = after_exit_usdt_amount * Decimal("0.999")
             pnl = after_exit_usdt_amount_after_fee - position['amount']
-            capital[0] = capital[0] + position['amount'] + pnl
+            config['capital'] = config['capital'] + position['amount'] + pnl
             change_percentage = abs(pnl) / position['amount'] * 100
         change_percentage = Decimal("{:.2f}".format(change_percentage))
     with trade_count_lock:
-        trade_count += 1
+        config['trade_count'] += 1
         positions.remove(position)
-        history_capital[0] = history_capital[0] + pnl
+        config['history_capital'] = config['history_capital'] + pnl
         trade_history.append({
-            'trade_number': trade_count,
+            'trade_number': config['trade_count'],
             'direction': 'LONG',
             'close_reason': reason,
             'symbol': position['symbol'],
@@ -104,25 +103,25 @@ def close_position(position, reason, excute_price, thread_id):
             'gain': pnl,
             'change_percentage': f"{change_percentage}%",
             'profit_loss_ratio': position['profit_loss_ratio'],
-            'capital': history_capital[0],
+            'capital': config['history_capital'],
             'profit_or_loss': 'profit' if pnl > 0 else 'loss'
         })
         with open(CSV_FILE, 'a', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow([trade_count, 'LONG', position['symbol'], position['entry_time'],
+            writer.writerow([config['trade_count'], 'LONG', position['symbol'], position['entry_time'],
                              datetime.now().strftime('%Y-%m-%d %H:%M:%S'), position['entry_price'], excute_price,
                              position['amount'], pnl, f"{change_percentage}%", position['profit_loss_ratio'],
-                             history_capital[0], 'profit' if pnl > 0 else 'loss'])
+                             config['history_capital'], 'profit' if pnl > 0 else 'loss'])
     total_trades = len(trade_history)
     win_trades = sum(1 for trade in trade_history if trade['profit_or_loss'] == 'profit')
     win_rate = "{:.2f}".format((win_trades / total_trades * 100) if total_trades > 0 else 0)
     total_positions = len(positions)
     positions_copy = deep_copy_positions(positions)
-    capital_copy = capital[0]
+    capital_copy = config['capital']
     capital_copy = Decimal(str(capital_copy))
     capital_copy = f"{capital_copy:.2f}"
     total_value_copy = f"{calculate_total_value():.2f}"
-    status = 'enabled' if allow_new_threads else 'disabled'
+    status = 'enabled' if config['allow_new_threads'] else 'disabled'
     socketio.emit('update_positions', {
         'positions': positions_copy,
         'capital': capital_copy,
@@ -136,23 +135,22 @@ def close_position(position, reason, excute_price, thread_id):
     logger.info(f"線程{thread_id}: {position['symbol']} 已成功平倉，原因：{reason}")
 
 def calculate_total_value():
-    total = capital[0]
+    total = config['capital']
     for pos in positions:
         total += pos['current_price'] * (pos['amount'] / pos['entry_price'])
     return total
 
-def trade_searcher(thread_id):
-    global capital, allow_new_threads, search_threads_active, CURRENT_DATE
+def trade_searcher():
+    global config, CURRENT_DATE
+    thread_id = config['thread_id']
     if thread_id == 1:
         time.sleep(5)
     with active_lock:
-        search_threads_active += 1
+        config['search_threads_active'] += 1
     class ExitLoopException(Exception):
         pass
-    class NextSymbolCheck(Exception):
-        pass
     try:
-        if allow_new_threads:
+        if config['allow_new_threads']:
             logger.info(f"線程{thread_id}: 准許開啟新線程，開始進入市場掃描")
             utc_tz = pytz.UTC
             CURRENT_DATE = datetime.now(utc_tz).date()
@@ -185,15 +183,15 @@ def trade_searcher(thread_id):
                             if check_conditions(df):
                                 process_trade = False
                                 with capital_lock:
-                                    if capital[0] >= Decimal(str(MIN_TRADE_AMOUNT)):
+                                    if config['capital'] >= Decimal(str(MIN_TRADE_AMOUNT)):
                                         logger.info(f"線程{thread_id}: 找到可能交易機會 - {symbol}")
                                         trade_amount = get_trade_amount(symbol, thread_id)
                                         if trade_amount and trade_amount >= Decimal(str(MIN_TRADE_AMOUNT)):
-                                            if trade_amount >= capital[0]:
-                                                if trade_amount >= capital[0] * Decimal("1.1"):
-                                                    trade_amount = capital[0]
+                                            if trade_amount >= config['capital']:
+                                                if trade_amount >= config['capital'] * Decimal("1.1"):
+                                                    trade_amount = config['capital']
                                                 else:
-                                                    trade_amount = capital[0] * Decimal("0.9")
+                                                    trade_amount = config['capital'] * Decimal("0.9")
                                                 trade_amount = Decimal(str(int(trade_amount)))
                                             process_trade = True
                                         else:
@@ -204,13 +202,14 @@ def trade_searcher(thread_id):
                                     logger.info(f"線程{thread_id}: 報酬 - {(profit_percentage * 100):.2f}%, 損失 - {(loss_percentage * 100):.2f}%, 報酬風險比 - {profit_loss_ratio}")
                                     if profit_loss_ratio < Decimal("1.5"):
                                         logger.info(f"線程{thread_id}: {symbol} 報酬風險比少於 1.5，終止交易")
-                                        raise NextSymbolCheck
+                                        continue
                                     with capital_lock:
-                                        if capital[0] >= trade_amount:
-                                            new_thread_id = thread_id + 1
+                                        if config['capital'] >= trade_amount:
+                                            config['thread_id'] += 1
+                                            new_thread_id = config['thread_id']
                                             logger.info(f"線程{thread_id}: 準備下一個線程，開啟新線程{new_thread_id}")
-                                            threading.Thread(target=trade_searcher, args=(new_thread_id,), daemon=True).start()
-                                            capital[0] -= trade_amount
+                                            threading.Thread(target=trade_searcher, args=(), daemon=True).start()
+                                            config['capital'] -= trade_amount
                                             position = {
                                                 'symbol': symbol,
                                                 'amount': trade_amount,
@@ -226,11 +225,11 @@ def trade_searcher(thread_id):
                                             threading.Thread(target=monitor_position, args=(position,), daemon=True).start()
                                             total_positions = len(positions)
                                             positions_copy = deep_copy_positions(positions)
-                                            capital_copy = capital[0]
+                                            capital_copy = config['capital']
                                             capital_copy = Decimal(str(capital_copy))
                                             capital_copy = f"{capital_copy:.2f}"
                                             total_value_copy = f"{calculate_total_value():.2f}"
-                                            status = 'enabled' if allow_new_threads else 'disabled'
+                                            status = 'enabled' if config['allow_new_threads'] else 'disabled'
                                             total_trades = len(trade_history)
                                             win_trades = sum(1 for trade in trade_history if trade['profit_or_loss'] == 'profit')
                                             win_rate = "{:.2f}".format((win_trades / total_trades * 100) if total_trades > 0 else 0)
@@ -246,10 +245,8 @@ def trade_searcher(thread_id):
                                             })
                                             raise ExitLoopException 
                                         else:
-                                            raise NextSymbolCheck
+                                            continue
                         except ccxt.BadSymbol:
-                            pass
-                        except NextSymbolCheck:
                             pass
                         except ExitLoopException:
                             logger.info(f"線程{thread_id}: 正常退出循環")
@@ -273,4 +270,4 @@ def trade_searcher(thread_id):
         logger.info(f"線程{thread_id}: 該線程已關閉")
     finally:
         with active_lock:
-            search_threads_active -= 1
+            config['search_threads_active'] -= 1
