@@ -3,6 +3,7 @@ from .config import app, socketio, positions, capital, trade_history, allow_new_
 from .trading_logic import calculate_total_value, deep_copy_positions, trade_searcher
 from .trading_logic import decimal_to_str
 import threading
+from decimal import Decimal
 
 @app.route('/')
 def positions_page():
@@ -74,7 +75,9 @@ def toggle_search():
 def handle_connect(auth=None):
     total_positions = len(positions)
     positions_copy = deep_copy_positions(positions)
-    capital_copy = f"{capital:.2f}"
+    capital_copy = capital
+    capital_copy = Decimal(str(capital_copy))
+    capital_copy = f"{capital_copy:.2f}"
     total_value_copy = f"{calculate_total_value():.2f}"
     status = 'enabled' if allow_new_threads else 'disabled'
     total_trades = len(trade_history)
