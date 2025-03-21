@@ -10,7 +10,7 @@ def positions_page():
     total_positions = len(positions)
     return render_template('positions.html', 
                          positions=positions, 
-                         capital=capital, 
+                         capital=capital[0], 
                          total_value=calculate_total_value(),
                          total_positions=total_positions)
 
@@ -75,7 +75,7 @@ def toggle_search():
 def handle_connect(auth=None):
     total_positions = len(positions)
     positions_copy = deep_copy_positions(positions)
-    capital_copy = capital
+    capital_copy = capital[0]
     capital_copy = Decimal(str(capital_copy))
     capital_copy = f"{capital_copy:.2f}"
     total_value_copy = f"{calculate_total_value():.2f}"
